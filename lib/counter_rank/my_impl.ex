@@ -33,7 +33,6 @@ defmodule CounterRank.MyImpl do
       iex> MyImpl.incr(:my_counter)
       2
   """
-  @callback incr(counter) :: integer
   def incr(counter) do
     Agent.update(__MODULE__, fn {value_by_counter, counters_by_value, max} ->
       value = Map.get(value_by_counter, counter, 0) + 1
@@ -71,7 +70,7 @@ defmodule CounterRank.MyImpl do
   end
 
   def update_max(max, value) when max < value, do: value
-  def update_max(max, value), do: max
+  def update_max(max, _value), do: max
 
   @doc """
   Returns the rank leader(s).
@@ -90,7 +89,6 @@ defmodule CounterRank.MyImpl do
       iex> MyImpl.leaders()
       [:a]
   """
-  @callback leaders :: [counter]
   def leaders do
     Agent.get(__MODULE__, fn {_, counters_by_value, max} ->
       Map.get(counters_by_value, max) || []
@@ -110,9 +108,8 @@ defmodule CounterRank.MyImpl do
       iex> MyImpl.rank()
       [{5, [:a]}, {3, [:b]}, {2, [:c]}, {1, [:d]}]
   """
-  @callback rank :: [{counting_value :: integer, [counter]}]
   def rank do
-    Agent.get(__MODULE__, fn {_, counters_by_value, max} ->
+    Agent.get(__MODULE__, fn {_, counters_by_value, _max} ->
       counters_by_value |> Map.to_list() |> Enum.sort_by(fn {key, _} -> -key end)
     end)
   end
